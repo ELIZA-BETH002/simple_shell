@@ -113,7 +113,7 @@ int _alias(info_t *info)
 		if (p)
 			set_alias(info, info->argv[i]);
 		else
-			print_alias(node_starts_with(info->alias, info->argv[i], '='));
+			print_alias(node_start_with(info->alias, info->argv[i], '='));
 	}
 
 	return (0);
