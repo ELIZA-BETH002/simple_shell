@@ -1,92 +1,57 @@
 #include "main.h"
 
 /**
- *_prinput - prints an input string
- * @str: the string to be printed
- *
+ * free_recurrent_data - free the fields needed each loop
+ * @data: struct of the program's data
  * Return: Nothing
-*/
-
-void _prinput(char *str)
+ */
+void free_recurrent_data(data_of_program *data)
 {
-	int i = 0;
+	if (data->tokens)
+		free_array_of_pointers(data->tokens);
+	if (data->input_line)
+		free(data->input_line);
+	if (data->command_name)
+		free(data->command_name);
 
-	if (!str)
-		return;
-	while (str[i] != '\0')
-	{
-		_eputchar(str[i]);
-		i++;
-	}
+	data->input_line = NULL;
+	data->command_name = NULL;
+	data->tokens = NULL;
 }
 
 /**
- * _eputchar - writes the character c to stderr
- * @c: The character to print
- *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
-*/
-
-int _eputchar(char c)
+ * free_all_data - free all field of the data
+ * @data: struct of the program's data
+ * Return: Nothing
+ */
+void free_all_data(data_of_program *data)
 {
-	static int i;
-	static char buf[WRITE_BUF_SIZE];
-
-	if (c == BUF_FLUSH || i >= WRITE_BUF_SIZE)
+	if (data->file_descriptor != 0)
 	{
-		write(2, buf, i);
-		i = 0;
+		if (close(data->file_descriptor))
+			perror(data->program_name);
 	}
-	if (c != BUF_FLUSH)
-		buf[i++] = c;
-	return (1);
-
+	free_recurrent_data(data);
+	free_array_of_pointers(data->env);
+	free_array_of_pointers(data->alias_list);
 }
 
 /**
- * _putfd - writes the character c to given fd
- * @c: The character to print
- * @fd: The filedescriptor to write to
- *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
-*/
-
-int _putfd(char c, int fd)
+ * free_array_of_pointers - frees each pointer of an array of pointers and the
+ * array too
+ * @array: array of pointers
+ * Return: nothing
+ */
+void free_array_of_pointers(char **array)
 {
-	static int i;
-	static char buf[WRITE_BUF_SIZE];
+	int i;
 
-	if (c == BUF_FLUSH || i >= WRITE_BUF_SIZE)
+	if (array != NULL)
 	{
-		write(fd, buf, i);
-		i = 0;
+		for (i = 0; array[i]; i++)
+			free(array[i]);
+
+		free(array);
+		array = NULL;
 	}
-	if (c != BUF_FLUSH)
-		buf[i++] = c;
-	return (1);
-
-}
-
-/**
- *_printstr - prints an input string
- * @str: the string to be printed
- * @fd: the filedescriptor to write to
- *
- * Return: the number of chars put
-*/
-
-int _printstr(char *str, int fd)
-{
-	int i = 0;
-
-	if (!str)
-		return (0);
-	while (*str)
-	{
-		i += _putfd(*str++, fd);
-	}
-	return (i);
-
 }
