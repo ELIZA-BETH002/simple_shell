@@ -32,7 +32,7 @@ int hsh(info_t *info, char **av)
 		frees_info(info, 0);
 	}
 	create_history(info);
-	free_info(info, 1);
+	frees_info(info, 1);
 	if (!interactive(info) && info->status)
 		exit(info->status);
 	if (builtin_ret == -2)
