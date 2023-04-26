@@ -1,52 +1,43 @@
 #include "main.h"
 
 /**
- * **strtow - splits a string into words. Repeat delimiters are ignored
- * @str: the input string
- * @d: the delimeter string
- * Return: a pointer to an array of strings, or NULL on failure
- */
-
-char **strtow(char *str, char *d)
+ * _strtok - separates strings with delimiters
+ * @line: It´s pointer to array we receive in getline.
+ * @delim: It´s characters we mark off string in parts.
+ * Return: A pointer to the created token
+*/
+char *_strtok(char *line, char *delim)
 {
-	int i, j, k, m, numwords = 0;
-	char **s;
+	int j;
+	static char *str;
+	char *copystr;
 
-	if (str == NULL || str[0] == 0)
-		return (NULL);
-	if (!d)
-		d = " ";
-	for (i = 0; str[i] != '\0'; i++)
-		if (!_delim(str[i], d) && (_delim(str[i + 1], d) || !str[i + 1]))
-			numwords++;
-
-	if (numwords == 0)
-		return (NULL);
-	s = malloc((1 + numwords) * sizeof(char *));
-
-	if (!s)
-		return (NULL);
-
-	for (i = 0, j = 0; j < numwords; j++)
+	if (line != NULL)
+		str = line;
+	for (; *str != '\0'; str++)
 	{
-		while (_delim(str[i], d))
-			i++;
-		k = 0;
-		while (!_delim(str[i + k], d) && str[i + k])
-			k++;
-		s[j] = malloc((k + 1) * sizeof(char));
-		if (!s[j])
+		for (j = 0; delim[j] != '\0'; j++)
 		{
-			for (k = 0; k < j; k++)
-				free(s[k]);
-			free(s);
-			return (NULL);
+			if (*str == delim[j])
+			break;
 		}
-		for (m = 0; m < k; m++)
-			s[j][m] = str[i++];
-		s[j][m] = 0;
+		if (delim[j] == '\0')
+			break;
 	}
-	s[j] = NULL;
-
-	return (s);
+	copystr = str;
+	if (*copystr == '\0')
+		return (NULL);
+	for (; *str != '\0'; str++)
+	{
+		for (j = 0; delim[j] != '\0'; j++)
+		{
+			if (*str == delim[j])
+			{
+				*str = '\0';
+				str++;
+				return (copystr);
+			}
+		}
+	}
+	return (copystr);
 }
