@@ -1,65 +1,71 @@
 #include "main.h"
 
+
 /**
- **_memfill - fills memory with a constant byte
- *@s: the pointer to the memory area
- *@b: the byte to fill *s with
- *@n: the amount of bytes to be filled
- *Return: (s) a pointer to the memory area s
-*/
-
-
-char *_memfill(char *s, char b, unsigned int n)
+ * _print - writes a array of chars in the standar output
+ * @string: pointer to the array of chars
+ * Return: the number of bytes writed or .
+ * On error, -1 is returned, and errno is set appropriately.
+ */
+int _print(char *string)
 {
-	unsigned int i;
-
-	for (i = 0; i < n; i++)
-		s[i] = b;
-	return (s);
+	return (write(STDOUT_FILENO, string, str_length(string)));
+}
+/**
+ * _printe - writes a array of chars in the standar error
+ * @string: pointer to the array of chars
+ * Return: the number of bytes writed or .
+ * On error, -1 is returned, and errno is set appropriately.
+ */
+int _printe(char *string)
+{
+	return (write(STDERR_FILENO, string, str_length(string)));
 }
 
 /**
- * frees_string - frees a string of strings
- * @pp: string of strings
-*/
-
-void frees_string(char **pp)
+ * _print_error - writes a array of chars in the standart error
+ * @data: a pointer to the program's data'
+ * @errorcode: error code to print
+ * Return: the number of bytes writed or .
+ * On error, -1 is returned, and errno is set appropriately.
+ */
+int _print_error(int errorcode, data_of_program *data)
 {
-	char **a = pp;
+	char n_as_string[10] = {'\0'};
 
-	if (!pp)
-		return;
-	while (*pp)
-		free(*pp++);
-	free(a);
-}
+	long_to_string((long) data->exec_counter, n_as_string, 10);
 
-/**
- * _realloc - reallocates a block of memory
- * @ptr: pointer to previous malloc'ated block
- * @old_size: byte size of previous block
- * @new_size: byte size of new block
- *
- * Return: pointer to da ol'block nameen.
-*/
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
-{
-	char *p;
-
-	if (!ptr)
-		return (malloc(new_size));
-	if (!new_size)
-		return (free(ptr), NULL);
-	if (new_size == old_size)
-		return (ptr);
-
-	p = malloc(new_size);
-	if (!p)
-		return (NULL);
-
-	old_size = old_size < new_size ? old_size : new_size;
-	while (old_size--)
-		p[old_size] = ((char *)ptr)[old_size];
-	free(ptr);
-	return (p);
+	if (errorcode == 2 || errorcode == 3)
+	{
+		_printe(data->program_name);
+		_printe(": ");
+		_printe(n_as_string);
+		_printe(": ");
+		_printe(data->tokens[0]);
+		if (errorcode == 2)
+			_printe(": Illegal number: ");
+		else
+			_printe(": can't cd to ");
+		_printe(data->tokens[1]);
+		_printe("\n");
+	}
+	else if (errorcode == 127)
+	{
+		_printe(data->program_name);
+		_printe(": ");
+		_printe(n_as_string);
+		_printe(": ");
+		_printe(data->command_name);
+		_printe(": not found\n");
+	}
+	else if (errorcode == 126)
+	{
+		_printe(data->program_name);
+		_printe(": ");
+		_printe(n_as_string);
+		_printe(": ");
+		_printe(data->command_name);
+		_printe(": Permission denied\n");
+	}
+	return (0);
 }
