@@ -32,8 +32,8 @@ ssize_t _buf(info_t *info, char **buf, size_t *len)
 				r--;
 			}
 			info->linecount_flag = 1;
-			remove_comments(*buf);
-			build_history_list(info, *buf, info->histcount++);
+			remove_comment(*buf);
+			add_history_list(info, *buf, info->histcount++);
 			/* if (_strchr(*buf, ';')) is this a command chain? */
 			{
 				*len = r;
@@ -70,7 +70,7 @@ ssize_t get_line(info_t *info)
 		check_chain(info, buf, &j, i, len);
 		while (j < len) /* iterate to semicolon or end */
 		{
-			if (is_chain(info, buf, &j))
+			if (_chain(info, buf, &j))
 				break;
 			j++;
 		}
