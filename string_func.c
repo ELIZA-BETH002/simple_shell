@@ -1,80 +1,86 @@
 #include "main.h"
 
 /**
- * _strlen - returns the length of a string
- * @s: the string whose length to check
+ * long_to_string - converts a number to a string.
+ * @number: number to be converten in an string.
+ * @string: buffer to save the number as string.
+ * @base: base to convert number
  *
- * Return: integer length of string
-*/
-
-int _strlen(char *s)
+ * Return: Nothing.
+ */
+void long_to_string(long number, char *string, int base)
 {
-	int i = 0;
+	int index = 0, inNegative = 0;
+	long cociente = number;
+	char letters[] = {"0123456789abcdef"};
 
-	if (!s)
-		return (0);
+	if (cociente == 0)
+		string[index++] = '0';
 
-	while (*s++)
-		i++;
-	return (i);
-}
+	if (string[0] == '-')
+		inNegative = 1;
 
-/**
- * _strcmp - performs lexicogarphic comparison of two strangs.
- * @s1: the first strang
- * @s2: the second strang
- *
- * Return: negative if s1 < s2, positive if s1 > s2, zero if s1 == s2
-*/
-
-int _strcmp(char *s1, char *s2)
-{
-	while (*s1 && *s2)
+	while (cociente)
 	{
-		if (*s1 != *s2)
-			return (*s1 - *s2);
-		s1++;
-		s2++;
+		if (cociente < 0)
+			string[index++] = letters[-(cociente % base)];
+		else
+			string[index++] = letters[cociente % base];
+		cociente /= base;
 	}
-	if (*s1 == *s2)
-		return (0);
-	else
-		return (*s1 < *s2 ? -1 : 1);
+	if (inNegative)
+		string[index++] = '-';
+
+	string[index] = '\0';
+	str_reverse(string);
+}
+
+
+/**
+ * _atoi - convert a string to an integer.
+ *
+ * @s: pointer to str origen.
+ * Return: int of string or 0.
+ */
+int _atoi(char *s)
+{
+	int sign = 1;
+	unsigned int number = 0;
+	/*1- analisys sign*/
+	while (!('0' <= *s && *s <= '9') && *s != '\0')
+	{
+		if (*s == '-')
+			sign *= -1;
+		if (*s == '+')
+			sign *= +1;
+		s++;
+	}
+
+	/*2 - extract the number */
+	while ('0' <= *s && *s <= '9' && *s != '\0')
+	{
+
+		number = (number * 10) + (*s - '0');
+		s++;
+	}
+	return (number * sign);
 }
 
 /**
- * starts_with - checks if needle starts with haystack
- * @haystack: string to search
- * @needle: the substring to find
+ * count_characters - count the coincidences of character in string.
  *
- * Return: address of next char of haystack or NULL
-*/
-
-char *starts_with(const char *haystack, const char *needle)
+ * @string: pointer to str origen.
+ * @character: string with  chars to be counted
+ * Return: int of string or 0.
+ */
+int count_characters(char *string, char *character)
 {
-	while (*needle)
-		if (*needle++ != *haystack++)
-			return (NULL);
-	return ((char *)haystack);
-}
+	int i = 0, counter = 0;
 
-/**
- * _strcat - concatenates two strings
- * @dest: the destination buffer
- * @src: the source buffer
- *
- * Return: pointer to destination buffer
-*/
-
-char *_strcat(char *dest, char *src)
-{
-	char *ret = dest;
-
-	while (*dest)
-		dest++;
-	while (*src)
-		*dest++ = *src++;
-	*dest = *src;
-    
-	return (ret);
+	for (; string[i]; i++)
+	{
+		if (string[i] == character[0])
+			counter++;
+	}
+	return (counter);
 }
