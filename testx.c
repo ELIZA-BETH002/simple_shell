@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stddef.h>
 char **tokenize(char *line_read, const char *delim)
 {
 	int i = 0, ii = 0,  j, count = 1, k = 0, len[1024];
