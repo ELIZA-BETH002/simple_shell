@@ -1,120 +1,113 @@
 #include "main.h"
 
-/**
- * _history - displays the history list, one command by line, preceded
- *              with line numbers, starting at 0.
- * @info: Structure containing potential arguments. Used to maintain
- *        constant function prototype.
- *  Return: Always 0
-*/
 
-int _history(info_t *info)
+/**
+ * print_alias - add, remove or show aliases
+ * @data: struct for the program's data
+ * @alias: name of the alias to be printed
+ * Return: zero if sucess, or other number if its declared in the arguments
+ */
+int print_alias(data_of_program *data, char *alias)
 {
-	print_list(info->history);
+	int i, j, alias_length;
+	char buffer[250] = {'\0'};
+
+	if (data->alias_list)
+	{
+		alias_length = str_length(alias);
+		for (i = 0; data->alias_list[i]; i++)
+		{
+			if (!alias || (str_compare(data->alias_list[i], alias, alias_length)
+				&&	data->alias_list[i][alias_length] == '='))
+			{
+				for (j = 0; data->alias_list[i][j]; j++)
+				{
+					buffer[j] = data->alias_list[i][j];
+					if (data->alias_list[i][j] == '=')
+						break;
+				}
+				buffer[j + 1] = '\0';
+				buffer_add(buffer, "'");
+				buffer_add(buffer, data->alias_list[i] + j + 1);
+				buffer_add(buffer, "'\n");
+				_print(buffer);
+			}
+		}
+	}
+
 	return (0);
 }
 
 /**
- * unset_alias - sets alias to string
- * @info: parameter struct
- * @str: the string alias
- *
- * Return: Always 0 on success, 1 on error
-*/
-
-int unset_alias(info_t *info, char *str)
+ * get_alias - add, remove or show aliases
+ * @data: struct for the program's data
+ * @name: name of the requested alias.
+ * Return: zero if sucess, or other number if its declared in the arguments
+ */
+char *get_alias(data_of_program *data, char *name)
 {
-	char *p, c;
-	int ret;
+	int i, alias_length;
 
-	p = _strchr(str, '=');
-	if (!p)
-		return (1);
-	c = *p;
-	*p = 0;
-	ret = delete_node_at_index(&(info->alias),
-		get_node_index(info->alias, node_start_with(info->alias, str, -1)));
-	*p = c;
-	return (ret);
-}
+	/* validate the arguments */
+	if (name == NULL || data->alias_list == NULL)
+		return (NULL);
 
-/**
- * set_alias - sets alias to string
- * @info: parameter struct
- * @str: the string alias
- *
- * Return: Always 0 on success, 1 on error
-*/
+	alias_length = str_length(name);
 
-int set_alias(info_t *info, char *str)
-{
-	char *p;
-
-	p = _strchr(str, '=');
-	if (!p)
-		return (1);
-	if (!*++p)
-		return (unset_alias(info, str));
-
-	unset_alias(info, str);
-	return (add_node_end(&(info->alias), str, 0) == NULL);
-}
-
-/**
- * print_alias - prints an alias string
- * @node: the alias node
- *
- * Return: Always 0 on success, 1 on error
-*/
-
-int print_alias(list_t *node)
-{
-	char *p = NULL, *a = NULL;
-
-	if (node)
-	{
-		p = _strchr(node->str, '=');
-		for (a = node->str; a <= p; a++)
-			_putchar(*a);
-		_putchar('\'');
-		_puts(p + 1);
-		_puts("'\n");
-		return (0);
-	}
-	return (1);
-}
-
-/**
- * _alias - mimics the alias builtin (man alias)
- * @info: Structure containing potential arguments. Used to maintain
- *          constant function prototype.
- *  Return: Always 0
-*/
-
-int _alias(info_t *info)
-{
-	int i = 0;
-	char *p = NULL;
-	list_t *node = NULL;
-
-	if (info->argc == 1)
-	{
-		node = info->alias;
-		while (node)
-		{
-			print_alias(node);
-			node = node->next;
+	for (i = 0; data->alias_list[i]; i++)
+	{/* Iterates through the environ and check for coincidence of the varname */
+		if (str_compare(name, data->alias_list[i], alias_length) &&
+			data->alias_list[i][alias_length] == '=')
+		{/* returns the value of the key NAME=  when find it */
+			return (data->alias_list[i] + alias_length + 1);
 		}
-		return (0);
 	}
-	for (i = 1; info->argv[i]; i++)
-	{
-		p = _strchr(info->argv[i], '=');
-		if (p)
-			set_alias(info, info->argv[i]);
-		else
-			print_alias(node_start_with(info->alias, info->argv[i], '='));
-	}
+	/* returns NULL if did not find it */
+	return (NULL);
 
+}
+
+/**
+ * set_alias - add, or override alias
+ * @alias_string: alias to be seted in the form (name='value')
+ * @data: struct for the program's data
+ * Return: zero if sucess, or other number if its declared in the arguments
+ */
+int set_alias(char *alias_string, data_of_program *data)
+{
+	int i, j;
+	char buffer[250] = {'0'}, *temp = NULL;
+
+	/* validate the arguments */
+	if (alias_string == NULL ||  data->alias_list == NULL)
+		return (1);
+	/* Iterates alias to find = char */
+	for (i = 0; alias_string[i]; i++)
+		if (alias_string[i] != '=')
+			buffer[i] = alias_string[i];
+		else
+		{/* search if the value of the alias is another alias */
+			temp = get_alias(data, alias_string + i + 1);
+			break;
+		}
+
+	/* Iterates through the alias list and check for coincidence of the varname */
+	for (j = 0; data->alias_list[j]; j++)
+		if (str_compare(buffer, data->alias_list[j], i) &&
+			data->alias_list[j][i] == '=')
+		{/* if the alias alredy exist */
+			free(data->alias_list[j]);
+			break;
+		}
+
+	/* add the alias */
+	if (temp)
+	{/* if the alias already exist */
+		buffer_add(buffer, "=");
+		buffer_add(buffer, temp);
+		data->alias_list[j] = str_duplicate(buffer);
+	}
+	else /* if the alias does not exist */
+		data->alias_list[j] = str_duplicate(alias_string);
 	return (0);
 }
